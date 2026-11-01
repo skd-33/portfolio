@@ -40,6 +40,8 @@ form label{white-space:nowrap}
 .sr{position:absolute;left:-9999px}
 .cur{display:inline-block;width:.6ch;height:1.1em;background:var(--accent);vertical-align:text-bottom;margin-left:2px;animation:bl 1.1s steps(1) infinite}
 @keyframes bl{50%{opacity:0}}
+/*nf*/.nf{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}.nf pre{margin:0;color:var(--accent);line-height:1.25}
+.grp{color:var(--dim);margin:10px 0 2px}
 body.haunted{--bg:#0e0a14;--bar:#17101f;--prompt:#b79cff;--accent:#ff7a90;--line:#2a1f38}
 .ghost{color:#b79cff;font-style:italic;margin-top:4px}
 .ghost.w{animation:fl 2.4s ease-in-out infinite}
@@ -68,6 +70,7 @@ const CONFIG={
   name:"Sourabh Kumar Dubey",
   user:"sourabh", host:"portfolio",
   tagline:"CS undergraduate and competitive programmer in Bengaluru.",
+  facts:{role:"CS undergrad, competitive programmer",location:"Bengaluru, India",college:"Bangalore Institute of Technology",leetcode:"700+ solved, Knight",codeforces:"Pupil, peak 1350+",languages:"C, C++, Python, JavaScript",shell:"haunt (gemma3:1b)",status:"open to internships"},
   email:"sourabhkumardubey200@gmail.com",
   resumePdf:"Sourabh_Kumar_Dubey_Resume.pdf",          // put the PDF next to index.html, or set to "" to hide the command
   links:{github:"https://github.com/skd-33",leetcode:"https://leetcode.com/u/skd-33",codeforces:"https://codeforces.com/profile/sourabhkumardubey200","dev.to":"https://dev.to/ab_33",x:"https://x.com/skd_33"},
@@ -79,9 +82,19 @@ const CONFIG={
     {cmd:"projects",desc:"things I've built",type:"projects",data:[
       {name:"BuildFolio",tech:"JavaScript, React, FastAPI, Ollama",link:"https://github.com/skd-33/BuildFolio",points:["AI workspace to build, track, understand and showcase technical projects.","React/Vite frontend, FastAPI + SQLAlchemy backend, local LLM (gemma3 via Ollama)."]},
       {name:"Haunted Terminal",tech:"Python, Ollama, gemma3",link:"https://github.com/skd-33/haunted-terminal",points:["Shell wrapper where a local open-weight model whispers eerie comments on every command.","Try it here: type haunt."]},
+      {name:"Look Up",tech:"Python, Skyfield, Ollama",link:"https://github.com/skd-33/look-up",points:["Offline stargazing companion that nudges you outside to look at what's up tonight, with a local model for the messages."]},
+      {name:"Song Saver",tech:"Python, open-source AI",link:"https://github.com/skd-33/song-saver",points:["Share a reel or short from your phone and get the song later, processed in the background."]},
+      {name:"Adventure Game",tech:"Python, GitHub Copilot",link:"https://github.com/skd-33/copilot-adventure-game",points:["Command-line adventure game built with GitHub Copilot."]},
       {name:"Deep Packet Inspection System",tech:"C++, Python",points:["Parses packet headers and traffic data to inspect and classify network activity."]},
       {name:"Obstacle Detection for Visually Impaired Users",tech:"Python, PyTorch, YOLO",points:["Real-time object detection from a smartphone camera."]},
       {name:"Chess Square Guessing Game",tech:"HTML, JavaScript",link:"https://github.com/skd-33/chess_square_guess_game",points:["Interactive game for learning chessboard squares."]}]},
+    {cmd:"achievements",desc:"badges, ranks and posts",type:"log",data:[
+      {d:"2026",t:"LeetCode Knight badge, 700+ problems solved"},
+      {d:"2026",t:"Codeforces Pupil, peak rating 1350+"},
+      {d:"2026",t:"3rd place in an AWS Cloud Quest tournament (1 of 6 finishers)"},
+      {d:"2026",t:"GitHub achievements: Pull Shark, Quickdraw"},
+      {d:"Nov 2026",t:"Published Haunted Terminal for DEV Hacktoberfest Week 4 https://dev.to/ab_33/haunted-terminal-a-ghost-in-my-shell-powered-by-local-gemma-44gf"},
+      {d:"Oct 2026",t:"Entered the DEV Hacktoberfest open-source AI challenges: Look Up, Song Saver, DocsPulse https://dev.to/ab_33"}]},
     {cmd:"skills",desc:"languages, algorithms, tools",type:"rows",data:{languages:"C, C++, Python, JavaScript",core:"DSA, Competitive Programming, Computer Networks",algorithms:"Graphs, DP (2D, bitmask, DAG), Greedy, Sliding Window, Binary Search, Trees, Fenwick, Segment Tree, Tarjan SCC","ai/vision":"PyTorch, YOLO, Ultralytics, Ollama","web/tools":"React, Vite, FastAPI, Three.js, Git"}},
     {cmd:"cp",desc:"competitive programming",type:"rows",data:{leetcode:"700+ solved, Knight badge https://leetcode.com/u/skd-33",codeforces:"Pupil, peak 1350+ https://codeforces.com/profile/sourabhkumardubey200",method:"Brute-force stress testing before finalizing a solution",aws:"3rd place in an AWS Cloud Quest tournament"}},
     {cmd:"education",desc:"where I study",type:"rows",data:{college:"Bangalore Institute of Technology, Bengaluru",degree:"B.E. Computer Science & Engineering",years:"2025 - present",cgpa:"8.8"}}
@@ -95,19 +108,36 @@ const lk=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${esc(t||u.replac
 const auto=t=>esc(t).replace(/(https?:\/\/[^\s]+)/g,u=>lk(u));
 const row=(k,v)=>`<div class="row"><b>${esc(k)}</b><span>${auto(v)}</span></div>`;
 const proj=p=>`<div class="proj"><h3>${esc(p.name)}</h3><div class="t">${esc(p.tech||"")}${p.link?" · "+lk(p.link,"source"):""}</div><ul>${(p.points||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
-const R={text:d=>d.map(x=>`<p>${auto(x)}</p>`).join(""),rows:d=>Object.entries(d).map(([k,v])=>row(k,v)).join(""),projects:d=>d.map(proj).join("")};
+const R={text:d=>d.map(x=>`<p>${auto(x)}</p>`).join(""),rows:d=>Object.entries(d).map(([k,v])=>row(k,v)).join(""),log:d=>d.map(x=>row(x.d,x.t)).join(""),
+projects:(d,a)=>{const q=(a||"").toLowerCase();const l=q?d.filter(p=>JSON.stringify(p).toLowerCase().includes(q)):d;return (l.length?l.map(proj).join(""):`<span class="er">no project matches "${esc(a)}"</span>`)+`<p class="dim">Filter with: projects &lt;word&gt;, for example projects python</p>`}};
 
 const C={},desc={};
-CONFIG.sections.forEach(s=>{C[s.cmd]=()=>R[s.type](s.data);desc[s.cmd]=s.desc});
+CONFIG.sections.forEach(s=>{C[s.cmd]=a=>R[s.type](s.data,a);desc[s.cmd]=s.desc});
 if(CONFIG.resumePdf){C.resume=()=>`<p>${lk(CONFIG.resumePdf,"Download "+CONFIG.resumePdf)}</p>`;desc.resume="download my resume (PDF)"}
-C.contact=()=>row("email",lk("mailto:"+CONFIG.email))+Object.entries(CONFIG.links).map(([k,v])=>row(k,lk(v))).join("");desc.contact="email and profiles";
+C.contact = () =>
+  row("email", CONFIG.email) +
+  Object.entries(CONFIG.links)
+    .map(([k, v]) => row(k, v))
+    .join("");
+desc.contact = "email and profiles";
 C.haunt=()=>{haunted=!haunted;document.body.classList.toggle("haunted",haunted);return haunted?`<span class="ac">The terminal is haunted.</span> Run any command. Type <span class="ac">haunt</span> again to exorcise.`:`<span class="dim">The ghost has left.</span>`};desc.haunt="let a ghost haunt every command (toggle)";
 C.theme=()=>{const d=document.documentElement;d.dataset.t=d.dataset.t==="dark"?"light":"dark";return `<span class="dim">theme: ${d.dataset.t}</span>`};
 C.whoami=()=>esc(CONFIG.user);
+C.neofetch=()=>`<div class="nf"><pre>  ┌────────┐
+  │ &gt;_ ░░░ │
+  │ ░░░░░░ │
+  └──┬──┬──┘
+     └──┘</pre><div>${row(CONFIG.user+"@"+CONFIG.host,"")}${Object.entries(CONFIG.facts).map(([k,v])=>row(k,v)).join("")}</div></div>`;desc.neofetch="quick profile card";
+C.history=()=>hist.length?hist.map((h,i)=>`${String(i+1).padStart(3)}  ${esc(h)}`).join("\n"):"<span class=dim>no history yet</span>";
+C.date=()=>new Date().toString();
+C.echo=a=>esc(a||"");
 C.ls=()=>`<span class="pa">${Object.keys(desc).join("  ")}</span>`;
-C.help=()=>`<p>Available commands:</p>`+Object.entries(desc).map(([a,b])=>row(a,b)).join("")+row("clear","clear the screen")+`<p class="dim" style="margin-top:8px">Tab completes, ↑ ↓ browse history.</p>`;
+const GROUPS={"about me":["about","neofetch","education","skills"],"work":["projects","achievements","cp","resume"],"reach me":["contact"],"fun":["haunt"]};
+C.help=()=>{const seen=new Set();let h="";for(const[g,l]of Object.entries(GROUPS)){const k=l.filter(x=>desc[x]);if(!k.length)continue;k.forEach(x=>seen.add(x));h+=`<div class="grp">${g}</div>`+k.map(x=>row(x,desc[x])).join("")}
+const rest=Object.keys(desc).filter(x=>!seen.has(x));if(rest.length)h+=`<div class="grp">other</div>`+rest.map(x=>row(x,desc[x])).join("");
+return h+`<div class="grp">terminal</div>`+row("clear","clear the screen")+row("history","commands you ran")+row("theme","switch light or dark")+`<p class="dim" style="margin-top:8px">Tab completes, ↑ ↓ browse history.</p>`};
 C["sudo hire-me"]=()=>`<span class="ac">Permission granted.</span> Email ${lk("mailto:"+CONFIG.email)} to continue.`;
-const names=["help",...Object.keys(desc),"clear"];
+const names=["help",...Object.keys(desc),"history","clear"];
 const hist=[];let hi=0;let haunted=false;
 const GH=["I was here before your first commit.","Something in that output is watching you.","Every file remembers who deleted it.","The logs go back further than you think.","Run it again. I dare you.","Your cursor blinks. So does something behind it."];
 async function whisper(c,o){
@@ -126,7 +156,8 @@ function run(raw){
   if(c==="clear"){log.innerHTML="";return}
   const d=add();d.querySelector(".c").textContent=raw.trim();
   const o=d.querySelector(".out");
-  o.innerHTML=C[c]?C[c]():`<span class="er">command not found: ${esc(c)}</span>. Type <span class="ac">help</span>.`;
+  let fn=C[c],a="";if(!fn){const i=c.indexOf(" ");if(i>0&&C[c.slice(0,i)]){fn=C[c.slice(0,i)];a=raw.trim().slice(i+1)}}
+  o.innerHTML=fn?fn(a):`<span class="er">command not found: ${esc(c)}</span>. Type <span class="ac">help</span>.`;
   if(haunted&&c!=="haunt")whisper(c,o);
   term.scrollTop=term.scrollHeight;
 }
