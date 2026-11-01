@@ -40,12 +40,17 @@ form label{white-space:nowrap}
 .sr{position:absolute;left:-9999px}
 .cur{display:inline-block;width:.6ch;height:1.1em;background:var(--accent);vertical-align:text-bottom;margin-left:2px;animation:bl 1.1s steps(1) infinite}
 @keyframes bl{50%{opacity:0}}
+body.haunted{--bg:#0e0a14;--bar:#17101f;--prompt:#b79cff;--accent:#ff7a90;--line:#2a1f38}
+.ghost{color:#b79cff;font-style:italic;margin-top:4px}
+.ghost.w{animation:fl 2.4s ease-in-out infinite}
+@keyframes fl{0%,100%{opacity:1}45%{opacity:.35}55%{opacity:.9}}
+@media(prefers-reduced-motion:reduce){.ghost.w{animation:none}}
 @media(prefers-reduced-motion:reduce){.cur{animation:none}}
 @media(max-width:560px){body{font-size:14px}.row{grid-template-columns:1fr}.row b{margin-top:6px}#in{font-size:16px}}
 </style>
 </head>
 <body>
-<header><i></i><i></i><i></i><span>sourabh@portfolio: ~</span></header>
+<header><i></i><i></i><i></i><span id="title"></span></header>
 <main id="term" aria-live="polite">
   <noscript>
     <h1>Sourabh Kumar Dubey</h1>
@@ -53,59 +58,81 @@ form label{white-space:nowrap}
     <p><a href="https://github.com/skd-33">GitHub</a> · <a href="https://leetcode.com/u/skd-33">LeetCode</a> · <a href="https://codeforces.com/profile/sourabhkumardubey200">Codeforces</a> · <a href="mailto:sourabhkumardubey200@gmail.com">Email</a></p>
   </noscript>
   <div id="log"></div>
-  <form id="f" autocomplete="off"><label for="in"><span class="ps">sourabh</span><span class="dim">@</span><span class="pa">portfolio</span><span class="dim">:~$</span></label><input id="in" spellcheck="false" autocapitalize="none" aria-label="Type a command, for example help"></form>
+  <form id="f" autocomplete="off"><label for="in" id="label"></label><input id="in" spellcheck="false" autocapitalize="none" aria-label="Type a command, for example help"></form>
 </main>
 <nav class="chips" aria-label="Commands" id="chips"></nav>
 
 <script>
-const $=s=>document.querySelector(s),log=$("#log"),inp=$("#in"),term=$("#term");
-const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
-const L=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${t||u.replace(/^https?:\/\/|^mailto:/,"")}</a>`;
-const row=(k,v)=>`<div class="row"><b>${k}</b><span>${v}</span></div>`;
-
-const proj=(n,t,l,ls)=>`<div class="proj"><h3>${n}</h3><div class="t">${t}${l?" · "+l:""}</div><ul>${ls.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
-
-const C={
-help:()=>`<p>Available commands:</p>`+[["about","who I am"],["projects","things I've built"],["skills","languages, algorithms, tools"],["cp","competitive programming stats"],["education","where I study"],["resume","download my resume (PDF)"],["contact","email and profiles"],["clear","clear the screen"]].map(([a,b])=>row(a,b)).join("")+`<p class="dim" style="margin-top:8px">Tab completes, ↑ ↓ browse history.</p>`,
-about:()=>`<p><span class="ac">Sourabh Kumar Dubey</span> — Computer Science undergraduate and competitive programmer in Bengaluru.</p><p>I solve algorithm problems daily (700+ on LeetCode) and build projects that read network packets, detect obstacles for visually impaired users, and run local LLMs.</p><p>Looking for a software engineering internship.</p>`,
-projects:()=>proj("BuildFolio","JavaScript, React, FastAPI, Ollama",L("https://github.com/skd-33/BuildFolio","source"),["AI workspace to build, track, understand and showcase technical projects.","React/Vite frontend, FastAPI + SQLAlchemy backend, local LLM (gemma3 via Ollama).","Made for the DEV Hacktoberfest Weekend Challenge."])
-+proj("Deep Packet Inspection System","C++, Python","",["Parses packet headers and traffic data to inspect and classify network activity.","Built over multiple versions using networking and cybersecurity fundamentals."])
-+proj("Obstacle Detection for Visually Impaired Users","Python, PyTorch, YOLO, Ultralytics","",["Real-time object detection from a smartphone camera.","Focused on timely, useful obstacle information."])
-+proj("Chess Square Guessing Game","HTML, JavaScript",L("https://github.com/skd-33/chess_square_guess_game","source"),["Interactive game for learning chessboard squares."])
-+`<p class="dim">More at ${L("https://github.com/skd-33?tab=repositories","github.com/skd-33")}</p>`,
-skills:()=>row("languages","C, C++, Python, JavaScript")+row("core","DSA, Competitive Programming, Computer Networks")+row("algorithms","Graphs, DP (2D, bitmask, DAG), Greedy, Backtracking, Sliding Window, Binary Search, Prefix Sums, Trees, Fenwick Tree, Segment Tree, SCC/Tarjan")+row("ai/vision","PyTorch, YOLO, Ultralytics, Ollama")+row("web/tools","React, Vite, FastAPI, Three.js, Git, GitHub"),
-cp:()=>row("leetcode","700+ solved, Knight badge · "+L("https://leetcode.com/u/skd-33","skd-33"))+row("codeforces","Pupil, peak 1350+ · "+L("https://codeforces.com/profile/sourabhkumardubey200","sourabhkumardubey200"))+row("techniques","Tarjan's SCC, Fenwick and Segment Trees, Manacher, Booth, sieve, inclusion–exclusion")+row("method","Brute-force stress testing before finalizing a solution")+row("aws","3rd place in an AWS Cloud Quest tournament (1 of 6 finishers)"),
-education:()=>row("college","Bangalore Institute of Technology, Bengaluru")+row("degree","B.E. Computer Science &amp; Engineering")+row("years","2025 – present")+row("cgpa","8.8"),
-resume:()=>`<p>${L("Sourabh_Kumar_Dubey_Resume.pdf","Download Sourabh_Kumar_Dubey_Resume.pdf")}</p>`,
-contact:()=>row("email",L("mailto:sourabhkumardubey200@gmail.com"))+row("github",L("https://github.com/skd-33"))+row("leetcode",L("https://leetcode.com/u/skd-33"))+row("codeforces",L("https://codeforces.com/profile/sourabhkumardubey200"))+row("dev.to",L("https://dev.to/ab_33"))+row("x",L("https://x.com/skd_33")),
-whoami:()=>"sourabh",
-ls:()=>`<span class="pa">about  projects  skills  cp  education  resume  contact</span>`,
-"sudo hire-me":()=>`<span class="ac">Permission granted.</span> Email ${L("mailto:sourabhkumardubey200@gmail.com")} to continue.`,
-theme:()=>{const d=document.documentElement;d.dataset.t=d.dataset.t==="dark"?"light":"dark";return `<span class="dim">theme: ${d.dataset.t}</span>`}
+/* ===== EDIT ONLY THIS BLOCK to make the site yours ===== */
+const CONFIG={
+  name:"Sourabh Kumar Dubey",
+  user:"sourabh", host:"portfolio",
+  tagline:"CS undergraduate and competitive programmer in Bengaluru.",
+  email:"sourabhkumardubey200@gmail.com",
+  resumePdf:"Sourabh_Kumar_Dubey_Resume.pdf",          // put the PDF next to index.html, or set to "" to hide the command
+  links:{github:"https://github.com/skd-33",leetcode:"https://leetcode.com/u/skd-33",codeforces:"https://codeforces.com/profile/sourabhkumardubey200","dev.to":"https://dev.to/ab_33",x:"https://x.com/skd_33"},
+  sections:[
+    {cmd:"about",desc:"who I am",type:"text",data:[
+      "Computer Science undergraduate and competitive programmer in Bengaluru.",
+      "I solve algorithm problems daily (700+ on LeetCode) and build projects that read network packets, detect obstacles for visually impaired users, and run local LLMs.",
+      "Looking for a software engineering internship."]},
+    {cmd:"projects",desc:"things I've built",type:"projects",data:[
+      {name:"BuildFolio",tech:"JavaScript, React, FastAPI, Ollama",link:"https://github.com/skd-33/BuildFolio",points:["AI workspace to build, track, understand and showcase technical projects.","React/Vite frontend, FastAPI + SQLAlchemy backend, local LLM (gemma3 via Ollama)."]},
+      {name:"Haunted Terminal",tech:"Python, Ollama, gemma3",link:"",points:["Shell wrapper where a local open-weight model whispers eerie comments on every command.","Try it here: type haunt."]},
+      {name:"Deep Packet Inspection System",tech:"C++, Python",points:["Parses packet headers and traffic data to inspect and classify network activity."]},
+      {name:"Obstacle Detection for Visually Impaired Users",tech:"Python, PyTorch, YOLO",points:["Real-time object detection from a smartphone camera."]},
+      {name:"Chess Square Guessing Game",tech:"HTML, JavaScript",link:"https://github.com/skd-33/chess_square_guess_game",points:["Interactive game for learning chessboard squares."]}]},
+    {cmd:"skills",desc:"languages, algorithms, tools",type:"rows",data:{languages:"C, C++, Python, JavaScript",core:"DSA, Competitive Programming, Computer Networks",algorithms:"Graphs, DP (2D, bitmask, DAG), Greedy, Sliding Window, Binary Search, Trees, Fenwick, Segment Tree, Tarjan SCC","ai/vision":"PyTorch, YOLO, Ultralytics, Ollama","web/tools":"React, Vite, FastAPI, Three.js, Git"}},
+    {cmd:"cp",desc:"competitive programming",type:"rows",data:{leetcode:"700+ solved, Knight badge https://leetcode.com/u/skd-33",codeforces:"Pupil, peak 1350+ https://codeforces.com/profile/sourabhkumardubey200",method:"Brute-force stress testing before finalizing a solution",aws:"3rd place in an AWS Cloud Quest tournament"}},
+    {cmd:"education",desc:"where I study",type:"rows",data:{college:"Bangalore Institute of Technology, Bengaluru",degree:"B.E. Computer Science & Engineering",years:"2025 - present",cgpa:"8.8"}}
+  ]
 };
-const names=Object.keys(C).filter(k=>!["whoami","ls","sudo hire-me","theme"].includes(k)).concat("clear");
-const hist=[];let hi=0;
+/* ===== end of config ===== */
 
-function add(cmd,instant){
-  const d=document.createElement("div");d.className="cmd";
-  d.innerHTML=`<div><span class="ps">sourabh</span><span class="dim">@</span><span class="pa">portfolio</span><span class="dim">:~$</span> <span class="c"></span></div><div class="out"></div>`;
-  log.appendChild(d);return d;
+const $=s=>document.querySelector(s),log=$("#log"),inp=$("#in"),term=$("#term");
+const esc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const lk=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${esc(t||u.replace(/^https?:\/\/|^mailto:/,""))}</a>`;
+const auto=t=>esc(t).replace(/(https?:\/\/[^\s]+)/g,u=>lk(u));
+const row=(k,v)=>`<div class="row"><b>${esc(k)}</b><span>${auto(v)}</span></div>`;
+const proj=p=>`<div class="proj"><h3>${esc(p.name)}</h3><div class="t">${esc(p.tech||"")}${p.link?" · "+lk(p.link,"source"):""}</div><ul>${(p.points||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+const R={text:d=>d.map(x=>`<p>${auto(x)}</p>`).join(""),rows:d=>Object.entries(d).map(([k,v])=>row(k,v)).join(""),projects:d=>d.map(proj).join("")};
+
+const C={},desc={};
+CONFIG.sections.forEach(s=>{C[s.cmd]=()=>R[s.type](s.data);desc[s.cmd]=s.desc});
+if(CONFIG.resumePdf){C.resume=()=>`<p>${lk(CONFIG.resumePdf,"Download "+CONFIG.resumePdf)}</p>`;desc.resume="download my resume (PDF)"}
+C.contact=()=>row("email",lk("mailto:"+CONFIG.email))+Object.entries(CONFIG.links).map(([k,v])=>row(k,lk(v))).join("");desc.contact="email and profiles";
+C.haunt=()=>{haunted=!haunted;document.body.classList.toggle("haunted",haunted);return haunted?`<span class="ac">The terminal is haunted.</span> Run any command. Type <span class="ac">haunt</span> again to exorcise.`:`<span class="dim">The ghost has left.</span>`};desc.haunt="let a ghost haunt every command (toggle)";
+C.theme=()=>{const d=document.documentElement;d.dataset.t=d.dataset.t==="dark"?"light":"dark";return `<span class="dim">theme: ${d.dataset.t}</span>`};
+C.whoami=()=>esc(CONFIG.user);
+C.ls=()=>`<span class="pa">${Object.keys(desc).join("  ")}</span>`;
+C.help=()=>`<p>Available commands:</p>`+Object.entries(desc).map(([a,b])=>row(a,b)).join("")+row("clear","clear the screen")+`<p class="dim" style="margin-top:8px">Tab completes, ↑ ↓ browse history.</p>`;
+C["sudo hire-me"]=()=>`<span class="ac">Permission granted.</span> Email ${lk("mailto:"+CONFIG.email)} to continue.`;
+const names=["help",...Object.keys(desc),"clear"];
+const hist=[];let hi=0;let haunted=false;
+const GH=["I was here before your first commit.","Something in that output is watching you.","Every file remembers who deleted it.","The logs go back further than you think.","Run it again. I dare you.","Your cursor blinks. So does something behind it."];
+async function whisper(c,o){
+  const g=document.createElement("div");g.className="ghost w";o.appendChild(g);
+  let t=GH[Math.floor(Math.random()*GH.length)],who="offline ghost";
+  try{const ac=new AbortController();setTimeout(()=>ac.abort(),4000);
+    const r=await fetch("http://localhost:11434/api/generate",{method:"POST",signal:ac.signal,body:JSON.stringify({model:"gemma3:1b",stream:false,options:{num_predict:40,temperature:.9},prompt:"You are a ghost haunting a terminal. Reply with ONE eerie sentence, max 18 words, about the command: "+c})});
+    const j=await r.json();if(j.response){t=j.response.trim().split("\n")[0];who="gemma3:1b, local"}}catch(e){}
+  g.textContent="~ "+t+"  ["+who+"]";term.scrollTop=term.scrollHeight;
 }
+const PS=`<span class="ps">${esc(CONFIG.user)}</span><span class="dim">@</span><span class="pa">${esc(CONFIG.host)}</span><span class="dim">:~$</span>`;
+function add(){const d=document.createElement("div");d.className="cmd";d.innerHTML=`<div>${PS} <span class="c"></span></div><div class="out"></div>`;log.appendChild(d);return d}
 function run(raw){
   const c=raw.trim().replace(/\s+/g," ").toLowerCase();if(!c)return;
   hist.push(c);hi=hist.length;
   if(c==="clear"){log.innerHTML="";return}
   const d=add();d.querySelector(".c").textContent=raw.trim();
   const o=d.querySelector(".out");
-  o.innerHTML=C[c]?C[c]():`<span class="er">command not found: ${c.replace(/[<>&]/g,"")}</span>. Type <span class="ac">help</span>.`;
+  o.innerHTML=C[c]?C[c]():`<span class="er">command not found: ${esc(c)}</span>. Type <span class="ac">help</span>.`;
+  if(haunted&&c!=="haunt")whisper(c,o);
   term.scrollTop=term.scrollHeight;
 }
-function type(cmd){return new Promise(res=>{
-  const d=add(),s=d.querySelector(".c"),o=d.querySelector(".out");
-  const done=()=>{o.innerHTML=C[cmd]();res()};
-  if(reduce){s.textContent=cmd;return done()}
-  let i=0;const t=setInterval(()=>{s.textContent=cmd.slice(0,++i);if(i>=cmd.length){clearInterval(t);setTimeout(done,120)}},45);
-})}
+document.title=CONFIG.name+" | Portfolio";
+$("#title").textContent=CONFIG.user+"@"+CONFIG.host+": ~";
+$("#label").innerHTML=PS;
 $("#f").addEventListener("submit",e=>{e.preventDefault();run(inp.value);inp.value="";term.scrollTop=term.scrollHeight});
 inp.addEventListener("keydown",e=>{
   if(e.key==="ArrowUp"&&hi>0){e.preventDefault();inp.value=hist[--hi]}
@@ -113,10 +140,10 @@ inp.addEventListener("keydown",e=>{
   else if(e.key==="Tab"){e.preventDefault();const m=names.filter(n=>n.startsWith(inp.value.toLowerCase()));if(m.length===1)inp.value=m[0]}
   else if(e.key==="l"&&e.ctrlKey){e.preventDefault();log.innerHTML=""}
 });
-$("#chips").innerHTML=["help","about","projects","skills","cp","education","resume","contact","clear"].map(n=>`<button type="button">${n}</button>`).join("");
+$("#chips").innerHTML=names.map(n=>`<button type="button">${esc(n)}</button>`).join("");
 $("#chips").addEventListener("click",e=>{if(e.target.tagName==="BUTTON"){run(e.target.textContent);inp.focus({preventScroll:true})}});
 term.addEventListener("click",()=>{if(!getSelection().toString())inp.focus({preventScroll:true})});
-(async()=>{for(const c of["whoami","about","projects"])await type(c);log.insertAdjacentHTML("beforeend",`<div class="out dim" style="margin-top:14px">Type <span class="ac">help</span> or tap a command below.</div>`);term.scrollTop=0})();
+log.innerHTML=`<div class="out"><p><span class="ac" style="font-size:1.25em;font-weight:700">${esc(CONFIG.name)}</span></p><p>${esc(CONFIG.tagline)}</p><p class="dim">Type <span class="ac">help</span> or tap a command below to explore.</p></div>`;
 </script>
 </body>
 </html>
